@@ -1,0 +1,56 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pdb
+*.so
+*.dll
+
+# Virtualenv
+.venv/
+venv/
+env/
+ENV/
+
+# Build/distribuição
+build/
+dist/
+*.egg-info/
+*.egg
+pip-wheel-metadata/
+
+# Testes/caches
+.pytest_cache/
+.coverage*
+.mypy_cache/
+.ruff_cache/
+
+# IDE/OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Logs e outputs
+logs/
+*.log
+
+# Debug do scraper (prints/screenshot)
+debug_*.png
+debug_sem_itens.png
+debug_erro.png
+
+# Credenciais/segredos (NÃO subir para o repo)
+serviceAccountKey.json
+.streamlit/secrets.toml
+.env
+
+# Playwright (relatórios/artefatos)
+playwright-report/
+test-results/
+blob-report/
+
+# Streamlit cache local
+.streamlit/cache/
+.streamlit/cache/*
