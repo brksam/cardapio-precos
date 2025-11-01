@@ -145,35 +145,32 @@ st.set_page_config(page_title=PROJECT_TITLE, layout="wide")
 st.title(PROJECT_TITLE)
 
 def check_password():
-    pwd_cfg = st.secrets.get("APP_PASSWORD", None)
-    # Se não tiver senha configurada no Secrets, travamos com mensagem clara
-    if not isinstance(pwd_cfg, str) or not pwd_cfg.strip():
-        st.error("APP_PASSWORD não configurado nos Secrets do app. Configure e redeploy.")
+    app_pwd = st.secrets.get("APP_PASSWORD", None)
+    if not isinstance(app_pwd, str) or not app_pwd.strip():
+        st.error("APP_PASSWORD não configurado nos Secrets. Configure e clique em Redeploy.")
         st.stop()
 
     if st.session_state.get("auth_ok"):
         return True
 
     st.title("Acesso ao painel")
-    pwd = st.text_input("Senha", type="password", key="pwd_input")
-    # ao apertar Enter no campo, já tenta
-    if st.session_state.get("pwd_input") and st.session_state.get("last_try") != st.session_state.pwd_input:
-        st.session_state["last_try"] = st.session_state.pwd_input
-        if st.session_state.pwd_input == pwd_cfg:
-            st.session_state["auth_ok"] = True
-            st.experimental_rerun()
-        else:
-            st.error("Senha incorreta. Tente novamente.")
 
-    if st.button("Entrar"):
-        if st.session_state.pwd_input == pwd_cfg:
+    # Form evita reruns múltiplos ao digitar
+    with st.form("login", clear_on_submit=False):
+        pwd = st.text_input("Senha", type="password")
+        ok = st.form_submit_button("Entrar")
+
+    if ok:
+        if pwd == app_pwd:
             st.session_state["auth_ok"] = True
-            st.experimental_rerun()
+            st.rerun()  # <- substitui experimental_rerun
         else:
             st.error("Senha incorreta. Tente novamente.")
 
     st.stop()
 
+# chame logo após set_page_config e antes de qualquer outra coisa
+check_password()
 # chame logo após set_page_config e antes de qualquer UI
 check_password()
 
