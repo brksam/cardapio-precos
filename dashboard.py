@@ -27,18 +27,21 @@ HISTORY_DEFAULT_DAYS = 30
 # ------------- Firestore -------------
 @st.cache_resource(show_spinner=False)
 def init_firestore():
-    cred_path = os.getenv("GOOGLE_APPLICATION_CREDENTIALS", "serviceAccountKey.json")
-    if not os.path.isfile(cred_path):
-        st.error(f"Credencial não encontrada: {cred_path}")
-        st.stop()
+    import firebase_admin
+    from firebase_admin import credentials, firestore
     try:
         if not firebase_admin._apps:
-            cred = credentials.Certificate(cred_path)
+            if "gcp_service_account" in st.secrets:
+                cred = credentials.Certificate(dict(st.secrets["gcp_service_account"]))
+            else:
+                cred_path = os.getenv("GOOGLE_APPLICATION_CREDENTIALS", "serviceAccountKey.json")
+                cred = credentials.Certificate(cred_path)
             firebase_admin.initialize_app(cred)
         return firestore.client()
     except Exception as e:
         st.error(f"Falha ao inicializar Firestore: {e}")
         st.stop()
+     
 
 db = init_firestore()
 
