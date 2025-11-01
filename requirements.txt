@@ -1,0 +1,5 @@
+﻿streamlit
+plotly
+pandas
+firebase-admin
+google-cloud-firestore
