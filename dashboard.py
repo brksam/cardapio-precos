@@ -144,6 +144,26 @@ def arrow(delta: float) -> str:
 st.set_page_config(page_title=PROJECT_TITLE, layout="wide")
 st.title(PROJECT_TITLE)
 
+def check_password():
+    pwd_cfg = st.secrets.get("APP_PASSWORD", "")
+    # Em produção, precisamos de senha; em dev/local, se não tiver secret, segue sem senha.
+    if not pwd_cfg:
+        return True
+    if st.session_state.get("auth_ok"):
+        return True
+
+    st.title("Acesso ao painel")
+    pwd = st.text_input("Senha", type="password")
+    if st.button("Entrar"):
+        if pwd == pwd_cfg:
+            st.session_state["auth_ok"] = True
+            st.experimental_rerun()
+        else:
+            st.error("Senha inválida")
+    st.stop()
+
+check_password()
+
 # Sidebar - Filtros
 st.sidebar.header("Filtros")
 hours_map = {
