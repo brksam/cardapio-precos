@@ -145,43 +145,37 @@ st.set_page_config(page_title=PROJECT_TITLE, layout="wide")
 st.title(PROJECT_TITLE)
 
 def check_password():
-    pwd_cfg = st.secrets.get("APP_PASSWORD", "")
-    if not pwd_cfg:
-        return True  # sem senha em dev
+    pwd_cfg = st.secrets.get("APP_PASSWORD", None)
+    # Se não tiver senha configurada no Secrets, travamos com mensagem clara
+    if not isinstance(pwd_cfg, str) or not pwd_cfg.strip():
+        st.error("APP_PASSWORD não configurado nos Secrets do app. Configure e redeploy.")
+        st.stop()
+
     if st.session_state.get("auth_ok"):
         return True
 
-    # estado
-    if "tries" not in st.session_state:
-        st.session_state.tries = 0
-    if "login_error" not in st.session_state:
-        st.session_state.login_error = ""
-
     st.title("Acesso ao painel")
-
-    # callback ao pressionar Enter no campo
-    def try_login():
+    pwd = st.text_input("Senha", type="password", key="pwd_input")
+    # ao apertar Enter no campo, já tenta
+    if st.session_state.get("pwd_input") and st.session_state.get("last_try") != st.session_state.pwd_input:
+        st.session_state["last_try"] = st.session_state.pwd_input
         if st.session_state.pwd_input == pwd_cfg:
-            st.session_state.auth_ok = True
-            st.session_state.login_error = ""
+            st.session_state["auth_ok"] = True
+            st.experimental_rerun()
         else:
-            st.session_state.tries += 1
-            st.session_state.login_error = "Senha incorreta. Tente novamente."
+            st.error("Senha incorreta. Tente novamente.")
 
-    st.text_input("Senha", type="password", key="pwd_input", on_change=try_login)
-
-    # botão opcional
     if st.button("Entrar"):
-        try_login()
+        if st.session_state.pwd_input == pwd_cfg:
+            st.session_state["auth_ok"] = True
+            st.experimental_rerun()
+        else:
+            st.error("Senha incorreta. Tente novamente.")
 
-    if st.session_state.login_error:
-        st.error(st.session_state.login_error)
-        st.caption(f"Tentativas: {st.session_state.tries}")
+    st.stop()
 
-    if st.session_state.get("auth_ok"):
-        st.experimental_rerun()
-    else:
-        st.stop()
+# chame logo após set_page_config e antes de qualquer UI
+check_password()
 
 
 # Sidebar - Filtros
