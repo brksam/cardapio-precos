@@ -146,23 +146,43 @@ st.title(PROJECT_TITLE)
 
 def check_password():
     pwd_cfg = st.secrets.get("APP_PASSWORD", "")
-    # Em produção, precisamos de senha; em dev/local, se não tiver secret, segue sem senha.
     if not pwd_cfg:
-        return True
+        return True  # sem senha em dev
     if st.session_state.get("auth_ok"):
         return True
 
-    st.title("Acesso ao painel")
-    pwd = st.text_input("Senha", type="password")
-    if st.button("Entrar"):
-        if pwd == pwd_cfg:
-            st.session_state["auth_ok"] = True
-            st.experimental_rerun()
-        else:
-            st.error("Senha inválida")
-    st.stop()
+    # estado
+    if "tries" not in st.session_state:
+        st.session_state.tries = 0
+    if "login_error" not in st.session_state:
+        st.session_state.login_error = ""
 
-check_password()
+    st.title("Acesso ao painel")
+
+    # callback ao pressionar Enter no campo
+    def try_login():
+        if st.session_state.pwd_input == pwd_cfg:
+            st.session_state.auth_ok = True
+            st.session_state.login_error = ""
+        else:
+            st.session_state.tries += 1
+            st.session_state.login_error = "Senha incorreta. Tente novamente."
+
+    st.text_input("Senha", type="password", key="pwd_input", on_change=try_login)
+
+    # botão opcional
+    if st.button("Entrar"):
+        try_login()
+
+    if st.session_state.login_error:
+        st.error(st.session_state.login_error)
+        st.caption(f"Tentativas: {st.session_state.tries}")
+
+    if st.session_state.get("auth_ok"):
+        st.experimental_rerun()
+    else:
+        st.stop()
+
 
 # Sidebar - Filtros
 st.sidebar.header("Filtros")
